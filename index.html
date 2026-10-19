@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Order Sheet - Hemodialysis (Secure Mode)</title>
     
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Firebase SDK v10 (Modular & Stable) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
@@ -27,12 +27,12 @@
             width: 100%; max-width: 350px; text-align: center;
         }
         .login-box h2 { margin-top: 0; color: #1e40af; margin-bottom: 20px; }
-        .login-box .form-control { margin-bottom: 15px; padding: 12px; font-size: 15px; }
+        .login-box .form-control { margin-bottom: 15px; padding: 12px; font-size: 15px; width: 100%; box-sizing: border-box; }
         .login-box .btn { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; }
         .error-msg { color: #dc2626; font-size: 13px; margin-bottom: 15px; display: none; }
 
         /* --- Layout --- */
-        #appContainer { display: none; width: 100%; height: 100%; } /* ซ่อนไว้จนกว่าจะล็อคอิน */
+        #appContainer { display: none; width: 100%; height: 100%; }
         .sidebar { width: 350px; background: #ffffff; border-right: 1px solid var(--border-color); padding: 20px; overflow-y: auto; box-shadow: 2px 0 5px rgba(0,0,0,0.05); z-index: 10; position: relative; }
         .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; position: relative; }
 
@@ -111,7 +111,7 @@
             <h2>ระบบฐานข้อมูลหน่วยไตเทียม</h2>
             <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">กรุณาเข้าสู่ระบบเพื่อใช้งาน</p>
             <div id="errorMsg" class="error-msg">อีเมลหรือรหัสผ่านไม่ถูกต้อง</div>
-            <input type="email" id="emailInput" class="form-control" placeholder="อีเมลเจ้าหน้าที่">
+            <input type="email" id="emailInput" class="form-control" placeholder="adminhd@hd.com">
             <input type="password" id="passwordInput" class="form-control" placeholder="รหัสผ่าน">
             <button class="btn" onclick="loginUser()">เข้าสู่ระบบ</button>
         </div>
@@ -356,12 +356,12 @@
     </div>
 
     <script>
-        // --- 1. Firebase Configuration ---
+        // --- 1. Firebase Configuration (Updated StorageBucket) ---
         const firebaseConfig = {
             apiKey: "AIzaSyBijgwr0E7wwjfdB9rnV4Wub6yY70oEtRE",
             authDomain: "doctororderhd.firebaseapp.com",
             projectId: "doctororderhd",
-            storageBucket: "doctororderhd.appspot.com",
+            storageBucket: "doctororderhd.firebasestorage.app",
             messagingSenderId: "849496323664",
             appId: "1:849496323664:web:348e153eba97e537564355"
         };
@@ -377,26 +377,22 @@
         // --- 2. Authentication Logic ---
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // Logged in
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'flex';
                 document.getElementById('userEmailDisplay').innerText = user.email;
                 document.getElementById('inputDate').valueAsDate = new Date();
                 initFirebaseListeners();
             } else {
-                // Logged out
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('appContainer').style.display = 'none';
-                // Stop listening to database to save data
                 if(unsubscribePatients) unsubscribePatients();
                 if(unsubscribeMeds) unsubscribeMeds();
             }
         });
 
         function loginUser() {
-            // เพิ่ม .trim() ตัดช่องว่างที่ระบบแถมให้
-            const email = document.getElementById('emailInput').value.trim(); 
-            const pass = document.getElementById('passwordInput').value;
+            const email = document.getElementById('emailInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
             const errorMsg = document.getElementById('errorMsg');
             
             if(!email || !pass) {
@@ -408,7 +404,6 @@
             auth.signInWithEmailAndPassword(email, pass)
                 .then(() => { errorMsg.style.display = "none"; })
                 .catch((error) => {
-                    // เปลี่ยนให้แสดงรหัสแจ้งเตือนตรงๆ จาก Firebase
                     errorMsg.innerText = "เข้าไม่ได้ (สาเหตุ: " + error.code + ")";
                     errorMsg.style.display = "block";
                 });
@@ -418,7 +413,6 @@
             auth.signOut();
         }
 
-        // Allow pressing Enter to login
         document.getElementById('passwordInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') loginUser();
         });
@@ -430,8 +424,6 @@
                 querySnapshot.forEach((doc) => { patients.push({ id: doc.id, ...doc.data() }); });
                 renderPatientListUI(document.getElementById('searchInput').value);
                 if(document.getElementById('patientModal').style.display === 'flex') renderModalPatientList();
-                
-                // ถ้าระบบว่างเปล่า ให้ใส่ข้อมูลตั้งต้น
                 if(patients.length === 0) seedDatabase();
             });
 
