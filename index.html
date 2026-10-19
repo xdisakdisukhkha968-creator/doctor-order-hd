@@ -394,18 +394,22 @@
         });
 
         function loginUser() {
-            const email = document.getElementById('emailInput').value;
+            // เพิ่ม .trim() ตัดช่องว่างที่ระบบแถมให้
+            const email = document.getElementById('emailInput').value.trim(); 
             const pass = document.getElementById('passwordInput').value;
             const errorMsg = document.getElementById('errorMsg');
+            
             if(!email || !pass) {
                 errorMsg.innerText = "กรุณากรอกอีเมลและรหัสผ่าน";
                 errorMsg.style.display = "block";
                 return;
             }
+            
             auth.signInWithEmailAndPassword(email, pass)
                 .then(() => { errorMsg.style.display = "none"; })
                 .catch((error) => {
-                    errorMsg.innerText = "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+                    // เปลี่ยนให้แสดงรหัสแจ้งเตือนตรงๆ จาก Firebase
+                    errorMsg.innerText = "เข้าไม่ได้ (สาเหตุ: " + error.code + ")";
                     errorMsg.style.display = "block";
                 });
         }
