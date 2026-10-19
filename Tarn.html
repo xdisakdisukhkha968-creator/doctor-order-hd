@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Order Sheet - Hemodialysis (Secure Mode)</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+        :root { --primary: #3b82f6; --primary-hover: #2563eb; --bg-color: #f3f4f6; --text-main: #1f2937; --border-color: #d1d5db; }
+        body { font-family: 'Sarabun', sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- Login Screen --- */
+        #loginScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%; max-width: 350px; text-align: center;
+        }
+        .login-box h2 { margin-top: 0; color: #1e40af; margin-bottom: 20px; }
+        .login-box .form-control { margin-bottom: 15px; padding: 12px; font-size: 15px; }
+        .login-box .btn { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; }
+        .error-msg { color: #dc2626; font-size: 13px; margin-bottom: 15px; display: none; }
+
+        /* --- Layout --- */
+        #appContainer { display: none; width: 100%; height: 100%; } /* ซ่อนไว้จนกว่าจะล็อคอิน */
+        .sidebar { width: 350px; background: #ffffff; border-right: 1px solid var(--border-color); padding: 20px; overflow-y: auto; box-shadow: 2px 0 5px rgba(0,0,0,0.05); z-index: 10; position: relative; }
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; position: relative; }
+
+        /* --- Sidebar Styles --- */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        .form-control { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Sarabun', sans-serif; font-size: 14px; box-sizing: border-box; }
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
+        
+        .section-title { font-size: 16px; font-weight: 700; color: #111827; border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 14px; transition: 0.2s; }
+        .btn:hover { background: var(--primary-hover); }
