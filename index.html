@@ -46,3 +46,540 @@
         .section-title { font-size: 16px; font-weight: 700; color: #111827; border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin-top: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 14px; transition: 0.2s; }
         .btn:hover { background: var(--primary-hover); }
+        .btn-small { padding: 4px 8px; font-size: 12px; }
+        .btn-orange { background: #f97316; } .btn-orange:hover { background: #ea580c; }
+        .btn-red { background: #ef4444; } .btn-red:hover { background: #dc2626; }
+        .btn-green { background: #10b981; } .btn-green:hover { background: #059669; }
+
+        /* --- Lists in Sidebar --- */
+        .patient-list-container, .med-list-container { max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 15px; background: #fafafa; }
+        .med-list-container { max-height: 200px; padding: 10px; }
+        .patient-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; }
+        .patient-item:hover { background: #e5e7eb; }
+        .patient-item:last-child { border-bottom: none; }
+        .patient-name { font-weight: 600; font-size: 14px; }
+        .patient-detail { font-size: 12px; color: #6b7280; }
+
+        /* --- A4 Paper Styles --- */
+        .print-controls { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; }
+        .a4-paper { background: white; width: 210mm; min-height: 297mm; padding: 15mm; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; font-size: 14px; }
+        .header-title { text-align: center; margin-bottom: 20px; line-height: 1.2; }
+        .header-title h2 { margin: 0; font-size: 20px; }
+        .header-title p { margin: 5px 0 0 0; font-size: 14px; }
+        .patient-info-a4 { display: flex; flex-wrap: wrap; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px 0; margin-bottom: 15px; font-weight: bold; }
+        .info-item { flex: 1; min-width: 33%; padding: 3px 0; }
+        .order-table { width: 100%; border-collapse: collapse; border: 1px solid #000; }
+        .order-table th, .order-table td { border: 1px solid #000; padding: 8px; vertical-align: top; }
+        .col-left { width: 35%; } .col-right { width: 65%; }
+        .sub-header { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+
+        /* Medication Checkboxes */
+        .med-checkbox-list { display: flex; flex-direction: column; gap: 8px; }
+        .med-item-ui { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; cursor: pointer; }
+        .med-item-ui input { margin-top: 3px; cursor: pointer; }
+        .med-item-a4 { display: flex; align-items: center; gap: 8px; margin-bottom: 8px;}
+        .signature-area { margin-top: 40px; text-align: right; padding-right: 50px; }
+
+        /* --- Modals (Popups) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .modal-header h3 { margin: 0; }
+        .close-btn { cursor: pointer; font-size: 20px; font-weight: bold; color: #888; }
+        .list-manager-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border: 1px solid #eee; margin-bottom: 5px; border-radius: 4px; background: #f9fafb; }
+
+        /* User Profile UI */
+        .user-profile { position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 10px; z-index: 100; background: white; padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .user-profile span { font-size: 14px; font-weight: bold; color: #374151; }
+
+        /* --- Print CSS --- */
+        @media print {
+            body { background: white; display: block; height: auto; overflow: visible; }
+            .sidebar, .print-controls, .user-profile { display: none !important; }
+            .main-content { padding: 0; display: block; }
+            .a4-paper { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border: none; }
+            .order-table { border: 2px solid #000; }
+            .order-table th, .order-table td { border: 1px solid #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🔒 Login Screen -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <h2>ระบบฐานข้อมูลหน่วยไตเทียม</h2>
+            <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">กรุณาเข้าสู่ระบบเพื่อใช้งาน</p>
+            <div id="errorMsg" class="error-msg">อีเมลหรือรหัสผ่านไม่ถูกต้อง</div>
+            <input type="email" id="emailInput" class="form-control" placeholder="อีเมลเจ้าหน้าที่">
+            <input type="password" id="passwordInput" class="form-control" placeholder="รหัสผ่าน">
+            <button class="btn" onclick="loginUser()">เข้าสู่ระบบ</button>
+        </div>
+    </div>
+
+    <!-- 🏥 Main Application -->
+    <div id="appContainer">
+        
+        <!-- User Profile & Logout -->
+        <div class="user-profile">
+            <span id="userEmailDisplay">user@hospital.com</span>
+            <button class="btn btn-red btn-small" onclick="logoutUser()">ออกจากระบบ</button>
+        </div>
+
+        <!-- Sidebar: Controls & Inputs -->
+        <div class="sidebar">
+            <div class="section-title">
+                1. เลือกผู้ป่วย
+                <button class="btn btn-small" onclick="openModal('patientModal')">⚙️ จัดการ</button>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="🔍 พิมพ์ชื่อหรือ HN เพื่อค้นหา..." oninput="filterPatients()">
+            </div>
+            
+            <div class="patient-list-container" id="patientListUI"></div>
+
+            <div class="form-group">
+                <label>ชื่อ-นามสกุล</label>
+                <input type="text" id="inputName" class="form-control" oninput="syncData()">
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>HN</label>
+                    <input type="text" id="inputHN" class="form-control" oninput="syncData()">
+                </div>
+                <div class="form-group">
+                    <label>อายุ (ปี)</label>
+                    <input type="text" id="inputAge" class="form-control" oninput="syncData()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>สิทธิ์การรักษา</label>
+                <input type="text" id="inputRight" class="form-control" oninput="syncData()">
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>วันที่</label>
+                    <input type="date" id="inputDate" class="form-control" oninput="syncData()">
+                </div>
+                <div class="form-group">
+                    <label>แพทย์ผู้สั่ง</label>
+                    <input type="text" id="inputDoctor" class="form-control" value="นพ." oninput="syncData()">
+                </div>
+            </div>
+
+            <div class="section-title">2. Order for one day</div>
+            <div class="form-group">
+                <textarea id="inputOrderOneDay" class="form-control" rows="5" placeholder="พิมพ์คำสั่งแพทย์สำหรับวันนี้..." oninput="syncData()"></textarea>
+            </div>
+
+            <div class="section-title">3. Order for continuation</div>
+            <div class="row">
+                <div class="form-group">
+                    <label>ครั้ง/สัปดาห์</label>
+                    <input type="text" id="inputFreq" class="form-control" oninput="syncData()">
+                </div>
+                <div class="form-group">
+                    <label>Dialyzer</label>
+                    <input type="text" id="inputDialyzer" class="form-control" oninput="syncData()">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>BFR (mL/min)</label>
+                    <input type="text" id="inputBFR" class="form-control" oninput="syncData()">
+                </div>
+                <div class="form-group">
+                    <label>DFR (mL/min)</label>
+                    <input type="text" id="inputDFR" class="form-control" oninput="syncData()">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Temp (°C)</label>
+                    <input type="text" id="inputTemp" class="form-control" oninput="syncData()">
+                </div>
+                <div class="form-group">
+                    <label>Dry weight (kg)</label>
+                    <input type="text" id="inputDryWeight" class="form-control" oninput="syncData()">
+                </div>
+            </div>
+            
+            <div style="background: #f9fafb; padding: 10px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e5e7eb;">
+                <label style="font-weight: 600; font-size: 13px; margin-bottom: 8px; display: block;">น้ำยา Dialysate (mEq/L)</label>
+                <div class="row">
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label style="font-size: 12px; font-weight: normal;">K</label>
+                        <input type="text" id="inputK" class="form-control" oninput="syncData()">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label style="font-size: 12px; font-weight: normal;">Na</label>
+                        <input type="text" id="inputNa" class="form-control" oninput="syncData()">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px; font-weight: normal;">Cl</label>
+                        <input type="text" id="inputCl" class="form-control" oninput="syncData()">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px; font-weight: normal;">HCO3</label>
+                        <input type="text" id="inputHCO3" class="form-control" oninput="syncData()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Anticoagulant / Heparin (Dose)</label>
+                <input type="text" id="inputHeparin" class="form-control" oninput="syncData()">
+            </div>
+
+            <div class="section-title">
+                4. รายการยา
+                <button class="btn btn-orange btn-small" onclick="openModal('medModal')">⚙️ ฐานข้อมูลยา</button>
+            </div>
+            <div class="form-group">
+                <input type="text" id="searchMedInput" class="form-control" placeholder="🔍 ค้นหายาเพื่อเลือก..." oninput="filterMedsUI()">
+            </div>
+            <div class="med-list-container">
+                <div class="med-checkbox-list" id="medUIList"></div>
+            </div>
+            <br><br>
+        </div>
+
+        <!-- Main Content: A4 Preview -->
+        <div class="main-content">
+            <div class="print-controls">
+                <button class="btn" onclick="window.print()">🖨️ พิมพ์เอกสาร A4</button>
+                <button class="btn btn-green" onclick="clearForm()">🔄 ล้างแบบฟอร์ม</button>
+            </div>
+
+            <div class="a4-paper">
+                <div class="header-title">
+                    <h2>Doctor Order Sheet</h2>
+                    <p>หน่วยไตเทียม โรงพยาบาลย่านตาขาว จังหวัดตรัง</p>
+                </div>
+                <div class="patient-info-a4">
+                    <div class="info-item" id="a4Name">ชื่อ-สกุล: </div>
+                    <div class="info-item" id="a4HN">HN: </div>
+                    <div class="info-item" id="a4Date">วันที่: </div>
+                    <div class="info-item" id="a4Right">สิทธิ์: </div>
+                    <div class="info-item" id="a4Age">อายุ: </div>
+                    <div class="info-item" id="a4Doctor">แพทย์: </div>
+                </div>
+
+                <table class="order-table">
+                    <tr>
+                        <td class="col-left">
+                            <div class="sub-header">ORDER FOR ONE DAY</div>
+                            <div id="a4OrderOneDay" style="white-space: pre-wrap; min-height: 400px;"></div>
+                        </td>
+                        <td class="col-right">
+                            <div class="sub-header">ORDER FOR CONTINUATION</div>
+                            <div style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 10px;">
+                                <strong>Review Prescription</strong><br>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                    <div>ครั้ง/สัปดาห์: <span id="a4Freq">________</span></div>
+                                    <div>Dialyzer: <span id="a4Dialyzer">________</span></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                    <div>BFR: <span id="a4BFR">________</span> mL/min</div>
+                                    <div>DFR: <span id="a4DFR">________</span> mL/min</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                    <div>Temp: <span id="a4Temp">________</span> °C</div>
+                                    <div>Dry weight: <span id="a4DryWeight">________</span> kg</div>
+                                </div>
+                                <div style="margin-top: 8px;"><strong>Dialysate:</strong></div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                                    <div>K: <span id="a4K">________</span></div>
+                                    <div>Na: <span id="a4Na">________</span></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                                    <div>Cl: <span id="a4Cl">________</span></div>
+                                    <div>HCO3: <span id="a4HCO3">________</span></div>
+                                </div>
+                                <div style="margin-top: 8px;">Anticoagulant / Heparin: <span id="a4Heparin">________</span></div>
+                            </div>
+                            <div class="sub-header">MEDICATION</div>
+                            <div id="a4MedList" style="min-height: 150px;"></div>
+                        </td>
+                    </tr>
+                </table>
+                <div class="signature-area">
+                    ลงชื่อแพทย์ _______________________________________<br>
+                    <span style="font-size: 12px; margin-right: 50px;">วันที่/เวลา ______________________</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: จัดการข้อมูลผู้ป่วย -->
+    <div class="modal-overlay" id="patientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>จัดการข้อมูลผู้ป่วย</h3>
+                <span class="close-btn" onclick="closeModal('patientModal')">&times;</span>
+            </div>
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <strong>เพิ่มผู้ป่วยใหม่</strong>
+                <div class="row" style="margin-top: 10px;">
+                    <div class="form-group"><input type="text" id="newPatName" class="form-control" placeholder="ชื่อ-สกุล"></div>
+                    <div class="form-group"><input type="text" id="newPatHN" class="form-control" placeholder="HN"></div>
+                </div>
+                <div class="row">
+                    <div class="form-group"><input type="text" id="newPatRight" class="form-control" placeholder="สิทธิ์"></div>
+                    <div class="form-group"><input type="text" id="newPatAge" class="form-control" placeholder="อายุ"></div>
+                </div>
+                <button class="btn btn-green" style="width: 100%;" onclick="addPatient()">+ บันทึกผู้ป่วยใหม่ลงระบบ</button>
+            </div>
+            <div id="modalPatientList"></div>
+        </div>
+    </div>
+
+    <!-- Modal: จัดการรายการยา -->
+    <div class="modal-overlay" id="medModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>จัดการฐานข้อมูลยา</h3>
+                <span class="close-btn" onclick="closeModal('medModal')">&times;</span>
+            </div>
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <strong>เพิ่มรายการยาเข้าสู่ระบบ</strong>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="newMedName" class="form-control" placeholder="เช่น EPOTIN BETA 4,000 unit">
+                    <button class="btn btn-green" onclick="addMedication()">+ เพิ่ม</button>
+                </div>
+            </div>
+            <div id="modalMedList"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBijgwr0E7wwjfdB9rnV4Wub6yY70oEtRE",
+            authDomain: "doctororderhd.firebaseapp.com",
+            projectId: "doctororderhd",
+            storageBucket: "doctororderhd.appspot.com",
+            messagingSenderId: "849496323664",
+            appId: "1:849496323664:web:348e153eba97e537564355"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let patients = [];
+        let medications = [];
+        let unsubscribePatients = null;
+        let unsubscribeMeds = null;
+
+        // --- 2. Authentication Logic ---
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Logged in
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+                document.getElementById('userEmailDisplay').innerText = user.email;
+                document.getElementById('inputDate').valueAsDate = new Date();
+                initFirebaseListeners();
+            } else {
+                // Logged out
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+                // Stop listening to database to save data
+                if(unsubscribePatients) unsubscribePatients();
+                if(unsubscribeMeds) unsubscribeMeds();
+            }
+        });
+
+        function loginUser() {
+            const email = document.getElementById('emailInput').value;
+            const pass = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            if(!email || !pass) {
+                errorMsg.innerText = "กรุณากรอกอีเมลและรหัสผ่าน";
+                errorMsg.style.display = "block";
+                return;
+            }
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => { errorMsg.style.display = "none"; })
+                .catch((error) => {
+                    errorMsg.innerText = "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+                    errorMsg.style.display = "block";
+                });
+        }
+
+        function logoutUser() {
+            auth.signOut();
+        }
+
+        // Allow pressing Enter to login
+        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') loginUser();
+        });
+
+        // --- 3. Database Listeners ---
+        function initFirebaseListeners() {
+            unsubscribePatients = db.collection("patients").orderBy("name").onSnapshot((querySnapshot) => {
+                patients = [];
+                querySnapshot.forEach((doc) => { patients.push({ id: doc.id, ...doc.data() }); });
+                renderPatientListUI(document.getElementById('searchInput').value);
+                if(document.getElementById('patientModal').style.display === 'flex') renderModalPatientList();
+                
+                // ถ้าระบบว่างเปล่า ให้ใส่ข้อมูลตั้งต้น
+                if(patients.length === 0) seedDatabase();
+            });
+
+            unsubscribeMeds = db.collection("medications").orderBy("name").onSnapshot((querySnapshot) => {
+                medications = [];
+                querySnapshot.forEach((doc) => { medications.push({ id: doc.id, ...doc.data() }); });
+                renderMedUI(document.getElementById('searchMedInput').value);
+                if(document.getElementById('medModal').style.display === 'flex') renderModalMedList();
+                syncData(); 
+            });
+        }
+
+        // --- 4. Patient Management (Firestore) ---
+        function addPatient() {
+            let name = document.getElementById('newPatName').value;
+            let hn = document.getElementById('newPatHN').value;
+            if(!name || !hn) return alert('กรุณากรอกชื่อและ HN');
+            db.collection("patients").add({
+                name: name, hn: hn, right: document.getElementById('newPatRight').value || "", age: document.getElementById('newPatAge').value || ""
+            }).then(() => {
+                document.getElementById('newPatName').value = ''; document.getElementById('newPatHN').value = '';
+                document.getElementById('newPatRight').value = ''; document.getElementById('newPatAge').value = '';
+            });
+        }
+        function deletePatient(id) {
+            if(!confirm('ต้องการลบผู้ป่วยรายนี้ใช่หรือไม่?')) return;
+            db.collection("patients").doc(id).delete();
+        }
+
+        // --- 5. Medication Management (Firestore) ---
+        function addMedication() {
+            let name = document.getElementById('newMedName').value;
+            if(!name) return alert('กรุณากรอกชื่อยา');
+            db.collection("medications").add({ name: name }).then(() => { document.getElementById('newMedName').value = ''; });
+        }
+        function updateMed(id, newName) { db.collection("medications").doc(id).update({ name: newName }); }
+        function deleteMedication(id) {
+            if(!confirm('ต้องการลบรายการยานี้ใช่หรือไม่?')) return;
+            db.collection("medications").doc(id).delete();
+        }
+
+        // --- 6. UI Rendering ---
+        function renderPatientListUI(filterText = "") {
+            const container = document.getElementById('patientListUI');
+            container.innerHTML = "";
+            let filtered = patients.filter(p => p.name.includes(filterText) || p.hn.includes(filterText));
+            filtered.forEach(p => {
+                let div = document.createElement('div');
+                div.className = 'patient-item';
+                div.innerHTML = `<div class="patient-name">${p.name}</div><div class="patient-detail">HN: ${p.hn} | สิทธิ์: ${p.right}</div>`;
+                div.onclick = () => selectPatient(p);
+                container.appendChild(div);
+            });
+        }
+        function filterPatients() { renderPatientListUI(document.getElementById('searchInput').value); }
+        function selectPatient(p) {
+            document.getElementById('inputName').value = p.name; document.getElementById('inputHN').value = p.hn;
+            document.getElementById('inputRight').value = p.right; document.getElementById('inputAge').value = p.age;
+            syncData();
+        }
+        function renderMedUI(filterText = "") {
+            const container = document.getElementById('medUIList');
+            container.innerHTML = "";
+            let filteredMeds = medications.filter(m => m.name.toLowerCase().includes(filterText.toLowerCase()));
+            filteredMeds.forEach(med => {
+                let label = document.createElement('label'); label.className = 'med-item-ui';
+                let isChecked = document.querySelector(`input[data-med-id="${med.id}"]`)?.checked ? "checked" : "";
+                label.innerHTML = `<input type="checkbox" data-med-id="${med.id}" value="${med.name}" onchange="syncData()" ${isChecked}> <span>${med.name}</span>`;
+                container.appendChild(label);
+            });
+        }
+        function filterMedsUI() { renderMedUI(document.getElementById('searchMedInput').value); }
+        function renderModalPatientList() {
+            const list = document.getElementById('modalPatientList'); list.innerHTML = "";
+            patients.forEach(p => {
+                list.innerHTML += `<div class="list-manager-item"><div><strong>${p.name}</strong> (HN: ${p.hn})</div><button class="btn btn-red btn-small" onclick="deletePatient('${p.id}')">ลบ</button></div>`;
+            });
+        }
+        function renderModalMedList() {
+            const list = document.getElementById('modalMedList'); list.innerHTML = "";
+            medications.forEach(m => {
+                list.innerHTML += `<div class="list-manager-item"><div style="flex:1; margin-right:10px;"><input type="text" class="form-control" value="${m.name}" onchange="updateMed('${m.id}', this.value)"></div><button class="btn btn-red btn-small" onclick="deleteMedication('${m.id}')">ลบ</button></div>`;
+            });
+        }
+
+        // --- 7. Sync Data to A4 ---
+        function syncData() {
+            document.getElementById('a4Name').innerText = "ชื่อ-สกุล: " + document.getElementById('inputName').value;
+            document.getElementById('a4HN').innerText = "HN: " + document.getElementById('inputHN').value;
+            document.getElementById('a4Age').innerText = "อายุ: " + document.getElementById('inputAge').value;
+            document.getElementById('a4Right').innerText = "สิทธิ์: " + document.getElementById('inputRight').value;
+            document.getElementById('a4Doctor').innerText = "แพทย์: " + document.getElementById('inputDoctor').value;
+
+            let dateVal = document.getElementById('inputDate').value;
+            if(dateVal) {
+                let parts = dateVal.split('-'); 
+                if(parts.length === 3) {
+                    let yearBE = parseInt(parts[0]) + 543;
+                    document.getElementById('a4Date').innerText = `วันที่: ${parts[2]}/${parts[1]}/${yearBE}`;
+                }
+            } else { document.getElementById('a4Date').innerText = "วันที่: "; }
+
+            document.getElementById('a4OrderOneDay').innerText = document.getElementById('inputOrderOneDay').value;
+            document.getElementById('a4Freq').innerText = document.getElementById('inputFreq').value || "________";
+            document.getElementById('a4Dialyzer').innerText = document.getElementById('inputDialyzer').value || "________";
+            document.getElementById('a4BFR').innerText = document.getElementById('inputBFR').value || "________";
+            document.getElementById('a4DFR').innerText = document.getElementById('inputDFR').value || "________";
+            document.getElementById('a4Temp').innerText = document.getElementById('inputTemp').value || "________";
+            document.getElementById('a4DryWeight').innerText = document.getElementById('inputDryWeight').value || "________";
+            document.getElementById('a4Heparin').innerText = document.getElementById('inputHeparin').value || "________";
+            document.getElementById('a4K').innerText = document.getElementById('inputK').value || "________";
+            document.getElementById('a4Na').innerText = document.getElementById('inputNa').value || "________";
+            document.getElementById('a4Cl').innerText = document.getElementById('inputCl').value || "________";
+            document.getElementById('a4HCO3').innerText = document.getElementById('inputHCO3').value || "________";
+
+            const a4MedList = document.getElementById('a4MedList'); a4MedList.innerHTML = "";
+            const checkboxes = document.querySelectorAll('#medUIList input[type="checkbox"]');
+            
+            checkboxes.forEach(chk => {
+                if (chk.checked) {
+                    let div = document.createElement('div'); div.className = 'med-item-a4';
+                    div.innerHTML = `<span style="font-size:16px;">☑</span> ${chk.value}`; a4MedList.appendChild(div);
+                }
+            });
+            for(let i=0; i<5; i++){
+                let div = document.createElement('div'); div.className = 'med-item-a4';
+                div.innerHTML = `<span style="font-size:16px;">☐</span> <span style="border-bottom: 1px dashed #000; width: 80%; display: inline-block; height: 16px;"></span>`;
+                a4MedList.appendChild(div);
+            }
+        }
+        function clearForm() {
+            document.querySelectorAll('input[type="text"]:not(#searchMedInput):not(#searchInput), textarea').forEach(el => el.value = '');
+            document.getElementById('inputDoctor').value = 'นพ.';
+            document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+            syncData();
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; if(id === 'patientModal') renderModalPatientList(); if(id === 'medModal') renderModalMedList(); }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function seedDatabase() {
+            const initialMeds = [
+                { name: "EPOTIN BETA 4,000 unit IV Post HD" }, { name: "Ferrous Fumarate (200 mg)" }, { name: "Folic acid (5 mg)" },
+                { name: "Sodium bicarbonate (300 mg)" }, { name: "CaCO3 (1000 mg)" }, { name: "Amlodipine (5 mg)" }, { name: "Losartan (50 mg)" }, { name: "Metoprolol (100 mg)" }
+            ];
+            initialMeds.forEach(m => db.collection("medications").add(m));
+            const initialPatients = [
+              { name: "นาย วิรัตน์ ไชยมล", hn: "236880", right: "จ่ายตรง", age: "" }, { name: "นาย สนั่น จิตเที่ยง", hn: "294191", right: "จ่ายตรง", age: "" },
+              { name: "นาง ขิม ขุนแสง", hn: "158839", right: "จ่ายตรง", age: "" }, { name: "นาง แดง กันตังกุล", hn: "238584", right: "จ่ายตรง", age: "" }, { name: "นาง นีรนุส จันทร์พุ่ม", hn: "109244", right: "จ่ายตรง", age: "" }
+            ];
+            initialPatients.forEach(p => db.collection("patients").add(p));
+        }
+    </script>
+</body>
+</html>
