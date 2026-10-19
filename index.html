@@ -251,6 +251,7 @@
         <div class="main-content">
             <div class="print-controls">
                 <button class="btn" onclick="window.print()">🖨️ พิมพ์เอกสาร A4</button>
+                <button class="btn btn-orange" onclick="exportToPDF()">📄 บันทึกเป็น PDF</button>
                 <button class="btn btn-green" onclick="clearForm()">🔄 ล้างแบบฟอร์ม</button>
             </div>
 
@@ -554,6 +555,12 @@
                 a4MedList.appendChild(div);
             }
         }
+
+        function exportToPDF() {
+            // ฟังก์ชันเรียกหน้าต่างพิมพ์เพื่อบันทึกเป็น PDF ของเบราว์เซอร์
+            window.print();
+        }
+
         function clearForm() {
             document.querySelectorAll('input[type="text"]:not(#searchMedInput):not(#searchInput), textarea').forEach(el => el.value = '');
             document.getElementById('inputDoctor').value = 'นพ.';
